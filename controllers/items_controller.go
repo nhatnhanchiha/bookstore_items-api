@@ -30,7 +30,7 @@ type itemsController struct {
 
 func (i *itemsController) Create(c *gin.Context) {
 	if err := oauth.AuthenticateRequest(c.Request); err != nil {
-		c.JSON(err.Status(), err.Message)
+		c.JSON(err.Status(), err)
 		return
 	}
 
@@ -50,7 +50,7 @@ func (i *itemsController) Create(c *gin.Context) {
 
 	result, err := services.ItemService.Create(&item)
 	if err != nil {
-		c.JSON(err.Status(), err.Message())
+		c.JSON(err.Status(), err)
 	}
 
 	c.JSON(http.StatusCreated, result)
@@ -61,7 +61,7 @@ func (i *itemsController) Get(c *gin.Context) {
 	logger.Info(itemId)
 	result, err := services.ItemService.Get(itemId)
 	if err != nil {
-		c.JSON(err.Status(), err.Message())
+		c.JSON(err.Status(), err)
 	}
 	c.JSON(http.StatusCreated, result)
 }
