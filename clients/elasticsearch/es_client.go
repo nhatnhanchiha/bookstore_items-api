@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/nhatnhanchiha/bookstore_utils-go/logger"
-	"github.com/olivere/elastic"
+	"github.com/olivere/elastic/v7"
 	"time"
 )
 
@@ -13,11 +13,11 @@ var (
 )
 
 type esClientInterface interface {
-	Index(index string, doc interface{}) (*elastic.IndexResponse, error)
+	Index(index string, strType string, doc interface{}) (*elastic.IndexResponse, error)
 	setClient(client *elastic.Client)
-	Get(index string, id string) (*elastic.GetResult, error)
-	Search(index string, query elastic.Query) (*elastic.SearchResult, error)
-	Update(index string, id string, doc interface{}) (*elastic.UpdateResponse, error)
+	Get(index string, strType string, id string) (*elastic.GetResult, error)
+	Search(index string, strType string, query elastic.Query) (*elastic.SearchResult, error)
+	Update(index string, strType string, id string, doc interface{}) (*elastic.UpdateResponse, error)
 }
 
 type esClient struct {
@@ -28,9 +28,10 @@ func (e *esClient) setClient(client *elastic.Client) {
 	e.Client = client
 }
 
-func (e *esClient) Index(index string, doc interface{}) (*elastic.IndexResponse, error) {
+func (e *esClient) Index(index string, strType string, doc interface{}) (*elastic.IndexResponse, error) {
 	ctx := context.Background()
 	result, err := e.Client.Index().
+		Type(strType).
 		Index(index).
 		BodyJson(doc).
 		Do(ctx)
@@ -63,9 +64,9 @@ func Init() {
 	// Create the index if it does not exists
 }
 
-func (e esClient) Get(index string, id string) (*elastic.GetResult, error) {
+func (e esClient) Get(index string, strType string, id string) (*elastic.GetResult, error) {
 	ctx := context.Background()
-	result, err := e.Client.Get().Index(index).Id(id).Do(ctx)
+	result, err := e.Client.Get().Index(index).Type(strType).Id(id).Do(ctx)
 	if err != nil {
 		logger.Error(fmt.Sprintf("error when trying to get index by id = %s", id), err)
 		return nil, err
@@ -78,9 +79,9 @@ func (e esClient) Get(index string, id string) (*elastic.GetResult, error) {
 	return result, nil
 }
 
-func (e esClient) Search(index string, query elastic.Query) (*elastic.SearchResult, error) {
+func (e esClient) Search(index string, strType string, query elastic.Query) (*elastic.SearchResult, error) {
 	ctx := context.Background()
-	result, err := e.Client.Search(index).Query(query).Do(ctx)
+	result, err := e.Client.Search(index).Type(strType).Query(query).Do(ctx)
 	if err != nil {
 		logger.Error(fmt.Sprintf("error when trying to search document index %s", index), err)
 		return nil, err
@@ -89,9 +90,9 @@ func (e esClient) Search(index string, query elastic.Query) (*elastic.SearchResu
 	return result, nil
 }
 
-func (e esClient) Update(index string, id string, doc interface{}) (*elastic.UpdateResponse, error) {
+func (e esClient) Update(index string, strType string, id string, doc interface{}) (*elastic.UpdateResponse, error) {
 	ctx := context.Background()
-	if updateResponse, err := e.Client.Update().Index(index).Id(id).Doc(doc).Do(ctx); err != nil {
+	if updateResponse, err := e.Client.Update().Index(index).Type(strType).Id(id).Doc(doc).Do(ctx); err != nil {
 		return nil, err
 	} else {
 		return updateResponse, nil
