@@ -1,6 +1,8 @@
 package queries
 
-import "github.com/olivere/elastic/v7"
+import (
+	"github.com/olivere/elastic/v7"
+)
 
 func (q EsQuery) Build() elastic.Query {
 	query := elastic.NewBoolQuery()

@@ -12,11 +12,10 @@ import (
 
 const (
 	indexItems = "items"
-	strType    = "item"
 )
 
 func (i *Item) Save() rest_errors.RestErr {
-	result, err := elasticsearch.Client.Index(indexItems, strType, i)
+	result, err := elasticsearch.Client.Index(indexItems, i)
 	if err != nil {
 		return rest_errors.NewInternalServerError("error when trying to save item", rest_errors.NewError("database error"))
 	}
@@ -27,7 +26,7 @@ func (i *Item) Save() rest_errors.RestErr {
 
 func (i *Item) Get() rest_errors.RestErr {
 	itemId := i.Id
-	result, err := elasticsearch.Client.Get(indexItems, strType, i.Id)
+	result, err := elasticsearch.Client.Get(indexItems, i.Id)
 	if err != nil {
 		if strings.Contains(err.Error(), "404") {
 			return rest_errors.NewNotFoundError(fmt.Sprintf("no item found with id %s", i.Id))
@@ -49,7 +48,7 @@ func (i *Item) Get() rest_errors.RestErr {
 }
 
 func (i Item) Search(query queries.EsQuery) ([]Item, rest_errors.RestErr) {
-	result, err := elasticsearch.Client.Search(indexItems, strType, query.Build())
+	result, err := elasticsearch.Client.Search(indexItems, query.Build())
 	if err != nil {
 		return nil, rest_errors.NewInternalServerError("error when trying to search documents", errors.New("database error"))
 	}
@@ -74,7 +73,7 @@ func (i Item) Search(query queries.EsQuery) ([]Item, rest_errors.RestErr) {
 }
 
 func (i *Item) Update() rest_errors.RestErr {
-	if _, err := elasticsearch.Client.Update(indexItems, strType, i.Id, i); err != nil {
+	if _, err := elasticsearch.Client.Update(indexItems, i.Id, i); err != nil {
 		return rest_errors.NewInternalServerError("error when update item", errors.New("database error"))
 	} else {
 		return nil
